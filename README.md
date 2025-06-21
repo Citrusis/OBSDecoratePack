@@ -12,4 +12,4 @@ Current overlay list:
 * [SnowFlakes](https://github.com/Citrusis/OBSDecoratePack/tree/SnowFlakes/counters/OBSDecoratePack%20-%20SnowFlakes%20by%20Citrusis)
 * [UrgencyMask](https://github.com/Citrusis/OBSDecoratePack/tree/UrgencyMask/counters/OBSDecoratePack%20-%20UrgencyMask%20by%20Citrusis)
 
-*p.s. if you have any good ideas. Please leave an issue*
+*p.s. if you have any good ideas. Please leave a discussion.*
