@@ -42,10 +42,13 @@ socket.commands((data) => {
 /////////////////////////////////////////// MAIN FUNCTION //////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-socket.api_v2(({ state, beatmap, play }) => {
+let fcBroken = false;
+let lastStatenumber = null;
 
+socket.api_v2(({ state, beatmap, play }) => {
     // 状态
     if (cache.statenumber !== state.number) {
+        lastStatenumber = cache.statenumber;
         cache.statenumber = state.number;
     }
 
@@ -69,14 +72,25 @@ socket.api_v2(({ state, beatmap, play }) => {
         cache.playcombocurrent = play.combo.current;
     }
 
-    FCCheck()
+    // 当前最大连击数
+    if (cache.playcombomax !== play.combo.max) {
+        cache.playcombomax = play.combo.max;
+    }
+
+    // 仅当statenumber从其他状态变为2时重置fcBroken
+    if (
+        cache.statenumber === 2 &&
+        lastStatenumber !== 2
+    ) {
+        fcBroken = false;
+    }
+
+    FCCheck();
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////// FUNCTIONS ////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-let fcBroken = false;
 
 function FCCheck() {
     if (
@@ -86,27 +100,19 @@ function FCCheck() {
         cache.statenumber === 17 ||
         cache.statenumber === 18
     ) {
-        // 新一局刚开始，重置
-        if (cache.beatmaptimelive <= cache.beatmaptimefirstObject) {
-            fcBroken = false;
-        }
-        // 第一个物件出现时断连
-        if (cache.beatmaptimelive === cache.beatmaptimefirstObject && cache.playcombocurrent === 0) {
-            fcBroken = true;
-        }
-        // 第一个物件后断连
-        if (cache.beatmaptimelive > cache.beatmaptimefirstObject && cache.playcombocurrent === 0) {
-            fcBroken = true;
-        }
         if (fcBroken) {
-            colorImg.style.opacity = 0;
             return;
         }
-        colorImg.style.opacity = 1;
-        colorImg.style.background = cache.FCCheckAPColor;
+
         if (cache.beatmaptimelive > cache.beatmaptimefirstObject) {
-            if (cache.playrankcurrent !== 'XH' && cache.playrankcurrent !== 'X') {
+            if (cache.playcombocurrent == 0 || cache.playcombocurrent !== cache.playcombomax) {
+                colorImg.style.opacity = 0;
+                fcBroken = true;
+            } else if (cache.playrankcurrent !== 'XH' && cache.playrankcurrent !== 'X') {
                 colorImg.style.background = cache.FCCheckFCColor;
+            } else {
+                colorImg.style.opacity = 1;
+                colorImg.style.background = cache.FCCheckAPColor;
             }
         }
     } else {
