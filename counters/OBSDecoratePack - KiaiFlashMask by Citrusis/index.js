@@ -36,29 +36,57 @@ socket.commands((data) => {
 /////////////////////////////////////////// MAIN FUNCTION //////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-socket.api_v2(({ state, settings, session, profile, performance, resultsScreen, play, beatmap, directPath, folders }) => {
+socket.api_v2((data) => {
     // 状态更新
-    if (cache.stateNumber !== state.number) {
-        cache.stateNumber = state.number;
+    if (cache.stateNumber !== data.state.number) {
+        cache.stateNumber = data.state.number;
         updateFlashAnimation();
     }
     // bpm 更新
-    if (cache.bpm !== beatmap.stats.bpm.realtime) {
-        cache.bpm = beatmap.stats.bpm.realtime;
+    if (cache.bpm !== data.beatmap.stats.bpm.realtime) {
+        cache.bpm = data.beatmap.stats.bpm.realtime;
         updateFlashAnimation();
         onKiaiOrBpmChanged();
     }
     // 谱面更新
-    if (cache.beatmapFile !== directPath.beatmapFile) {
-        cache.beatmapFile = directPath.beatmapFile;
-        checkOsuFile(directPath).then(onKiaiOrBpmChanged);
+    if (cache.beatmapFile !== data.directPath.beatmapFile) {
+        cache.beatmapFile = data.directPath.beatmapFile;
+        checkOsuFile(data.directPath).then(onKiaiOrBpmChanged);
     }
     // 播放进度更新
-    if (cache.live != beatmap.time.live) {
-        cache.live = beatmap.time.live;
+    if (cache.live != data.beatmap.time.live) {
+        cache.live = data.beatmap.time.live;
         updateFlashAnimation();
     }
-});
+},
+[
+    {
+        field: 'state',
+        keys: ['number']
+    },
+    {
+        field: 'beatmap',
+        keys: [
+            {
+                field: 'stats',
+                keys: [
+                    {
+                        field: 'bpm',
+                        keys: ['realtime']
+                    }
+                ]
+            },
+            {
+                field: 'time',
+                keys: ['live']
+            }
+        ]
+    },
+    {
+        field: 'directPath',
+        keys: ['beatmapFile']
+    }
+]);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////// FUNCTIONS ////////////////////////////////////////////
