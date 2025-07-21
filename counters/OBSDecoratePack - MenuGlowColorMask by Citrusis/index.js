@@ -26,15 +26,21 @@ socket.commands((data) => {
 /////////////////////////////////////////// MAIN FUNCTION //////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-socket.api_v2(({ state, settings, session, profile, performance, resultsScreen, play, beatmap, directPath, folders }) => {
+socket.api_v2((data) => {
 
     // 皮肤更新
-    if (cache.skinFolder !== directPath.skinFolder) {
-        cache.skinFolder = directPath.skinFolder;
+    if (cache.skinFolder !== data.directPath.skinFolder) {
+        cache.skinFolder = data.directPath.skinFolder;
         updateMenuGlowMask();
     }
 
-});
+},
+[
+    {
+        field: 'directPath',
+        keys: ['skinFolder']
+    }
+]);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////// FUNCTIONS ////////////////////////////////////////////
