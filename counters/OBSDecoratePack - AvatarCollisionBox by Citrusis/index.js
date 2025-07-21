@@ -123,15 +123,21 @@ socket.commands((data) => {
 /////////////////////////////////////////// MAIN FUNCTION //////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-socket.api_v2(({ profile }) => {
+socket.api_v2((data) => {
 
   // 玩家ID更新
-  if (cache.profileid != profile.id) {
-    cache.profileid = profile.id;
+  if (cache.profileid != data.profile.id) {
+    cache.profileid = data.profile.id;
     avatar.src = `https://a.ppy.sh/${profile.id}`;
   }
   
-});
+},
+[
+    {
+        field: 'profile',
+        keys: ['id']
+    }
+]);
 
 // 初始化时只绑定一次 onload
 avatar.onload = () => {
