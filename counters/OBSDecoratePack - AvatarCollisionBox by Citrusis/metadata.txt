@@ -5,4 +5,4 @@ Author: Citrusis
 CompatibleWith: tosu
 Resolution: 384 x 216 
 authorLinks: https://github.com/Citrusis
-Notes: [Any ratio available]  Set a box and then there will be a pic starting rolling in it!
+Notes: [Any ratio available] Set a box and then there will be a pic starting rolling in it!
