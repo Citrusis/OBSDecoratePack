@@ -15,10 +15,12 @@ socket.commands((data) => {
             // Urgency 颜色
             if (cache.UrgencyMaskColor !== message.UrgencyMaskColor) {
                 cache.UrgencyMaskColor = message.UrgencyMaskColor;
+                console.log(`Color: ${cache.UrgencyMaskColor}`);
             }
             // 模式
             if (cache.UrgencyMaskMode !== message.UrgencyMaskMode) {
                 cache.UrgencyMaskMode = message.UrgencyMaskMode;
+                console.log(`Mode: ${cache.UrgencyMaskMode}`);
             }
             // 过渡动画
             if (cache.UrgencyMaskAnimation !== message.UrgencyMaskAnimation) {
@@ -44,11 +46,12 @@ socket.commands((data) => {
 let lastStateNumber = null;
 let fadeTimeout = null;
 
-socket.api_v2(({ state, play, beatmap }) => {
+socket.api_v2((data) => {
     const urgency = document.getElementById('urgency');
 
     // 检查statenumber变化，做透明度渐变
-    if (lastStateNumber !== state.number) {
+    if (lastStateNumber !== data.state.number) {
+        lastStateNumber = data.state.number;
         if (urgency) {
             urgency.style.opacity = 0;
             if (fadeTimeout) clearTimeout(fadeTimeout);
@@ -56,31 +59,23 @@ socket.api_v2(({ state, play, beatmap }) => {
                 urgency.style.opacity = 1;
             }, 300);
         }
-        lastStateNumber = state.number;
     }
 
     // 更新缓存
-    if (cache.statenumber !== state.number) {
-        cache.statenumber = state.number;
+    if (cache.statenumber !== data.state.number) {
+        cache.statenumber = data.state.number;
     }
-    if (cache.playhealthBarnormal !== play.healthBar.normal) {
-        cache.playhealthBarnormal = play.healthBar.normal;
+    if (cache.playhealthBarnormal !== data.play.healthBar.normal) {
+        cache.playhealthBarnormal = data.play.healthBar.normal;
     }
-    if (cache.playaccuracy !== play.accuracy) {
-        cache.playaccuracy = play.accuracy;
+    if (cache.playaccuracy !== data.play.accuracy) {
+        cache.playaccuracy = data.play.accuracy;
     }
-    if (cache.progress !== (beatmap.time.live / beatmap.time.lastObject)) {
-        cache.progress = (beatmap.time.live / beatmap.time.lastObject);
+    if (cache.progress !== (data.beatmap.time.live / data.beatmap.time.lastObject)) {
+        cache.progress = (data.beatmap.time.live / data.beatmap.time.lastObject);
     }
 
-    // 打印当前值
-    console.log(
-        'playhealthBarnormal:', cache.playhealthBarnormal,
-        'playaccuracy:', cache.playaccuracy,
-        'progress:', cache.progress
-    );
-
-    if (state.number === 2) {
+    if (data.state.number === 2) {
         urgency.style.display = 'block';
         let value = 0;
         if (cache.UrgencyMaskMode === 'HP') {
@@ -91,15 +86,15 @@ socket.api_v2(({ state, play, beatmap }) => {
             value = (1 - (cache.progress)) * 100;
         }
         // 打印 value
-        console.log('value:', value);
+        // console.log('value:', value);
 
         // 解析动画并打印关键帧
         let alpha = 1;
         if (cache.UrgencyMaskAnimation) {
             const animArr = parseAnimationString(cache.UrgencyMaskAnimation);
-            animArr.forEach(frame => {
-                console.log(`${frame.x}%    { opacity: ${frame.y}; }`);
-            });
+            // animArr.forEach(frame => {
+            //     console.log(`${frame.x}%    { opacity: ${frame.y}; }`);
+            // });
             alpha = getAlphaFromAnimation(animArr, value);
         } else {
             alpha = Math.max(0, Math.min(1, value / 100));
@@ -110,7 +105,32 @@ socket.api_v2(({ state, play, beatmap }) => {
     } else {
         urgency.style.display = 'none';
     }
-});
+},
+[
+    {
+        field: 'state',
+        keys: ['number']
+    },
+    {
+        field: 'beatmap',
+        keys: [
+            {
+                field: 'time',
+                keys: ['live', 'lastObject']
+            }
+        ]
+    },
+    {
+        field: 'play',
+        keys: [
+            {
+                field: 'healthBar',
+                keys: ['normal']
+            },
+            'accuracy'
+        ],
+    }
+]);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////// FUNCTIONS ////////////////////////////////////////////
