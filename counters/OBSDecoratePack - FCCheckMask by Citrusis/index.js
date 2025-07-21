@@ -45,48 +45,76 @@ socket.commands((data) => {
 let fcBroken = false;
 let lastStatenumber = null;
 
-socket.api_v2(({ state, beatmap, play }) => {
+socket.api_v2((data) => {
     // 状态
-    if (cache.statenumber !== state.number) {
+    if (cache.statenumber !== data.state.number) {
         lastStatenumber = cache.statenumber;
-        cache.statenumber = state.number;
+        cache.statenumber = data.state.number;
     }
 
     // 播放进度
-    if (cache.beatmaptimelive !== beatmap.time.live) {
-        cache.beatmaptimelive = beatmap.time.live;
+    if (cache.beatmaptimelive !== data.beatmap.time.live) {
+        cache.beatmaptimelive = data.beatmap.time.live;
     }
 
     // 开始时间
-    if (cache.beatmaptimefirstObject !== beatmap.time.firstObject) {
-        cache.beatmaptimefirstObject = beatmap.time.firstObject;
+    if (cache.beatmaptimefirstObject !== data.beatmap.time.firstObject) {
+        cache.beatmaptimefirstObject = data.beatmap.time.firstObject;
     }
 
     // 等级
-    if (cache.playrankcurrent !== play.rank.current) {
-        cache.playrankcurrent = play.rank.current;
+    if (cache.playrankcurrent !== data.play.rank.current) {
+        cache.playrankcurrent = data.play.rank.current;
     }
 
     // 连击数
-    if (cache.playcombocurrent !== play.combo.current) {
-        cache.playcombocurrent = play.combo.current;
+    if (cache.playcombocurrent !== data.play.combo.current) {
+        cache.playcombocurrent = data.play.combo.current;
     }
 
     // 当前最大连击数
-    if (cache.playcombomax !== play.combo.max) {
-        cache.playcombomax = play.combo.max;
+    if (cache.playcombomax !== data.play.combo.max) {
+        cache.playcombomax = data.play.combo.max;
     }
 
-    // 仅当statenumber从其他状态变为2时重置fcBroken
+    // 仅当进入游戏或重开时重置fcBroken
     if (
         cache.statenumber === 2 &&
-        lastStatenumber !== 2
+        (lastStatenumber !== 2 || data.beatmap.time.live === data.beatmap.time.firstObject)
     ) {
         fcBroken = false;
     }
 
     FCCheck();
-});
+},
+[
+    {
+        field: 'state',
+        keys: ['number']
+    },
+    {
+        field: 'beatmap',
+        keys: [
+            {
+                field: 'time',
+                keys: ['live', 'firstObject']
+            }
+        ]
+    },
+    {
+        field: 'play',
+        keys: [
+            {
+                field: 'rank',
+                keys: ['current']
+            },
+            {  
+                field: 'combo',
+                keys: ['current', 'max']
+            }
+        ]
+    }
+]);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////// FUNCTIONS ////////////////////////////////////////////
